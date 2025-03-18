@@ -18,6 +18,8 @@ set -e
 scriptdir="$(dirname "$0")"
 git=$(command -v git) || git=true
 
+. $scriptdir/khadas.sh
+
 # deduce aports directory
 [ -n "$APORTS" ] || APORTS=$(realpath "$scriptdir/../")
 [ -e "$APORTS/main/build-base" ] || die "Unable to deduce aports base checkout"

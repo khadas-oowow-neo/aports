@@ -1,0 +1,36 @@
+#!/bin/sh
+
+#= build khadas images
+
+#apk add \
+#	abuild apk-tools alpine-conf busybox fakeroot syslinux xorriso cmd:mksquashfs
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+PROFILENAME=base
+PROFILENAME=rpi
+PROFILENAME=khadas
+ARCH=aarch64
+PHOME=~/packages
+
+CMD sh ~/aports/scripts/mkimage.sh --tag edge \
+    --outdir ~/alpine.images \
+    --arch $ARCH \
+    --repository file:///$PHOME/main \
+    --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --workdir ~/apline.images.build \
+    --profile $PROFILENAME
+
+exit 0
+
+export BL31=/home/builder/khadas/edge/bl31.bin
+export TEE=/home/builder/khadas/edge/tee.bin
+
+KERNEL_PKG="u-boot linux-rpi" \
+	CBUILDROOT=~/sysroot-aarch64 \
+	BOOTSTRAP_REPO="http://dl-cdn.alpinelinux.org/alpine/edge/main" \
+	time ~/aports/scripts/bootstrap.sh aarch64
+
