@@ -87,7 +87,6 @@ build() {
 		--host="$CHOST" \
 		--prefix=/usr \
 		--enable-threadsafe \
-		--enable-readline \
 		--enable-session \
 		--enable-static \
 		--enable-fts3 \
