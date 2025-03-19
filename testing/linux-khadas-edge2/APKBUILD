@@ -1,0 +1,203 @@
+# Maintainer: Gunjan Gupta <gunjan@wesion.com>
+
+_flavor=edges-6.1.y
+_flavor=khadas-edge2
+
+pkgname=linux-$_flavor
+pkgver=1.7.3
+pkgrel=0
+pkgdesc="Linux kernel for Edge 2"
+url="https://www.khadas.com"
+depends="initramfs-generator"
+_depends_dev="perl gmp-dev mpc1-dev mpfr-dev elfutils-dev bash flex bison zstd"
+makedepends="$_depends_dev sed installkernel bc linux-headers linux-firmware-any openssl-dev>3 mawk
+	diffutils findutils zstd pahole python3 gcc>=13.1.1_git20230624"
+options="!strip !check"
+source="https://github.com/khadas/linux/archive/refs/tags/khadas-edges-linux-6.1-v${pkgver}-release.tar.gz
+	https://github.com/khadas/linux/commit/53f2bfce46d8fd5c9d14d0067ea73144da55748b.patch
+	"
+#subpackages="$pkgname-dev:_dev $pkgname-doc"
+builddir="$srcdir"/linux-khadas-edges-linux-6.1-v${pkgver}-release
+arch="aarch64"
+_kerarch="arm64"
+license="GPL-2.0-only"
+
+prepare() {
+	default_prepare
+
+	# remove localversion from patch if any
+	rm -f localversion*
+}
+
+_kernelarch() {
+	local arch="$1"
+	case "$arch" in
+		aarch64*) arch="arm64" ;;
+	esac
+	echo "$arch"
+}
+
+_prepareconfig() {
+	local _builddir="$srcdir"/build-$_flavor
+	mkdir -p "$_builddir"
+	echo "-$pkgrel-$_flavor" > "$_builddir"/localversion-alpine
+
+
+	cp "$builddir"/arch/${_kerarch}/configs/kedges_defconfig "$_builddir"/.config
+	msg "Configuring $_flavor kernel ($arch)"
+	make -C "$builddir" \
+		O="$_builddir" \
+		ARCH="${_kerarch}" \
+		olddefconfig
+
+	if grep "CONFIG_MODULE_SIG=y" "$_builddir"/.config >/dev/null; then
+		if [ -f "$KERNEL_SIGNING_KEY" ]; then
+			sed -i -e "s:^CONFIG_MODULE_SIG_KEY=.*:CONFIG_MODULE_SIG_KEY=\"$KERNEL_SIGNING_KEY\":" \
+				"$_builddir"/.config
+			msg "Using $KERNEL_SIGNING_KEY to sign $_flavor kernel ($arch) modules"
+		else
+			warning "KERNEL_SIGNING_KEY was not set. A signing key will be generated, but 3rd"
+			warning "party modules can not be signed"
+		fi
+	fi
+}
+
+
+set_kbuild_timestamp() {
+	# KBUILD_BUILD_TIMESTAMP needs to be parsable by busybox date
+	export KBUILD_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S' -u${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
+}
+
+build() {
+	unset LDFLAGS
+	# for some reason these sometimes leak into the kernel build,
+	# -Werror=format-security breaks some stuff
+	unset CFLAGS CPPFLAGS CXXFLAGS
+	set_kbuild_timestamp
+	_prepareconfig
+	msg "Building kernel"
+	cd "$srcdir"/build-$_flavor
+
+	# set org in cert for modules signing
+	# https://www.kernel.org/doc/html/v6.1/admin-guide/module-signing.html#generating-signing-keys
+	mkdir -p certs
+	sed -e 's/#O = Unspecified company/O = alpinelinux.org/' \
+		"$builddir"/certs/default_x509.genkey \
+		> certs/x509.genkey
+
+	# build will fail because of missing mali_csffw.bin file.
+	# copy the same
+	mkdir -p drivers/gpu/arm/bifrost/
+	cp "$builddir"/drivers/gpu/arm/bifrost/mali_csffw.bin drivers/gpu/arm/bifrost/
+
+	make ARCH="${_kerarch}" \
+		CC="${CC:-gcc}" \
+		AWK="${AWK:-mawk}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine"
+}
+
+_package() {
+	local _outdir="$1"
+	set_kbuild_timestamp
+
+	cd "$srcdir"/build-$_flavor
+	local _abi_release="$(make -s kernelrelease)"
+
+	mkdir -p "$_outdir"/boot "$_outdir"/lib/modules
+
+	make modules_install zinstall dtbs_install \
+		ARCH="$_kerarch" \
+		INSTALL_MOD_PATH="$_outdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_PATH="$_outdir"/boot \
+		INSTALL_DTBS_PATH="$_outdir/boot/dtbs-$_flavor"
+
+	rm -f "$_outdir"/lib/modules/"$_abi_release"/build \
+		"$_outdir"/lib/modules/"$_abi_release"/source
+	rm -rf "$_outdir"/lib/firmware
+
+	install -D -m644 include/config/kernel.release \
+		"$_outdir"/usr/share/kernel/$_buildflavor/kernel.release
+}
+
+# main flavor installs in $pkgdir
+package() {
+	depends="$depends linux-firmware-any"
+	_package "$pkgdir"
+}
+
+_dev() {
+	local _flavor=$(echo $subpkgname | sed -E 's/(^linux-|-dev$)//g') #'
+	local _builddir="$srcdir"/build-$_flavor
+	local _abi_release="$(make -C "$_builddir" -s kernelrelease)"
+	# copy the only the parts that we really need for build 3rd party
+	# kernel modules and install those as /usr/src/linux-headers,
+	# simlar to what ubuntu does
+	#
+	# this way you dont need to install the 300-400 kernel sources to
+	# build a tiny kernel module
+	#
+	pkgdesc="Headers and script for third party modules for $_flavor kernel"
+	depends="$_depends_dev"
+	local dir="$subpkgdir"/usr/src/linux-headers-"$_abi_release"
+	set_kbuild_timestamp
+
+	# first we import config, run prepare to set up for building
+	# external modules, and create the scripts
+	mkdir -p "$dir"
+	cp -a "$_builddir"/.config "$_builddir"/localversion-alpine \
+		"$dir"/
+
+	install -D -t "$dir"/certs "$_builddir"/certs/signing_key.x509 || :
+
+	make -C "$builddir" \
+		O="$dir" \
+		ARCH="$(_kernelarch $CARCH)" \
+		AWK="${AWK:-mawk}" \
+		prepare modules_prepare scripts
+
+	# remove the stuff that points to real sources. we want 3rd party
+	# modules to believe this is the sources
+	rm "$dir"/Makefile "$dir"/source
+
+	# copy the needed stuff from real sources
+	#
+	# this is taken from ubuntu kernel build script
+	# http://kernel.ubuntu.com/git/ubuntu/ubuntu-zesty.git/tree/debian/rules.d/3-binary-indep.mk
+	cd "$builddir"
+	find .  -path './include/*' -prune \
+		-o -path './scripts/*' -prune -o -type f \
+		\( -name 'Makefile*' -o -name 'Kconfig*' -o -name 'Kbuild*' -o \
+		   -name '*.sh' -o -name '*.pl' -o -name '*.lds' -o -name 'Platform' \) \
+		-print | cpio -pdm "$dir"
+
+	cp -a scripts include "$dir"
+
+	find "arch/$_kerarch" -name include -type d -print | while IFS='' read -r folder; do
+		find "$folder" -type f
+	done | sort -u | cpio -pdm "$dir"
+
+	install -Dm644 "$_builddir"/Module.symvers \
+		"$dir"/Module.symvers
+
+	# remove unneeded things
+	msg "Removing documentation..."
+	rm -r "$dir"/Documentation
+	find "$dir" -type f -name '*.o' -printf 'Removing %P\n' -delete
+	msg "Removing unneeded arch headers..."
+	for i in "$dir"/arch/*; do
+		if [ "${i##*/}" != "$_kerarch" ]; then
+			echo "  ${i##*/}"
+			rm -r "$i"
+		fi
+	done
+
+	mkdir -p "$subpkgdir"/lib/modules/"$_abi_release"
+	ln -sf /usr/src/linux-headers-"$_abi_release" \
+		"$subpkgdir"/lib/modules/"$_abi_release"/build
+}
+
+sha512sums="
+a850f52394563ad4353686d844094ed9d82815d7a58f901a0967f17d347fa7601a24b198cef3ffbce5cc755338142459895bab4d015d3adae98d2509039ccbcd  khadas-edges-linux-6.1-v1.7.3-release.tar.gz
+63cc3d4df7141084e5d8b8ab7abbfab78deceb59c70e54bd5328f062fdcc03980125982a93c04748cd0961aaffa976a92a0f6ae0b9fc52512d928569962f8238  53f2bfce46d8fd5c9d14d0067ea73144da55748b.patch
+"
