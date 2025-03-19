@@ -1,4 +1,0 @@
-# Khadas kernel
-
- * edge2
- 
