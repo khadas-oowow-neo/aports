@@ -1,0 +1,17 @@
+#!/bin/sh
+
+#= build khadas uboot
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+export BL31=/home/builder/khadas/edge/bl31.bin
+export TEE=/home/builder/khadas/edge/tee.bin
+
+KERNEL_PKG="u-boot-khadas-edge2" \
+	CBUILDROOT=~/sysroot-aarch64 \
+	BOOTSTRAP_REPO="http://dl-cdn.alpinelinux.org/alpine/edge/main" \
+	time ~/aports/scripts/bootstrap.sh aarch64
+

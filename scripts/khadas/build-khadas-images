@@ -24,13 +24,3 @@ CMD sh ~/aports/scripts/mkimage.sh --tag edge \
     --workdir ~/apline.images.build \
     --profile $PROFILENAME
 
-exit 0
-
-export BL31=/home/builder/khadas/edge/bl31.bin
-export TEE=/home/builder/khadas/edge/tee.bin
-
-KERNEL_PKG="u-boot linux-rpi" \
-	CBUILDROOT=~/sysroot-aarch64 \
-	BOOTSTRAP_REPO="http://dl-cdn.alpinelinux.org/alpine/edge/main" \
-	time ~/aports/scripts/bootstrap.sh aarch64
-
