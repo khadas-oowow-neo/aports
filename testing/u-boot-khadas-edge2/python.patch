@@ -1,0 +1,35 @@
+diff --git a/arch/arm/mach-rockchip/decode_bl31.py b/arch/arm/mach-rockchip/decode_bl31.py
+index 301bd15375..c0db739484 100755
+--- a/arch/arm/mach-rockchip/decode_bl31.py
++++ b/arch/arm/mach-rockchip/decode_bl31.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ #
+ # Copyright (C) 2020 Rockchip Electronics Co., Ltd
+ #
+diff --git a/make.sh b/make.sh
+index 765a5c9980..78a344fbdb 100755
+--- a/make.sh
++++ b/make.sh
+@@ -733,11 +733,6 @@ function pack_fit_image()
+ 	if ! which dtc >/dev/null 2>&1 ; then
+ 		echo "ERROR: No 'dtc', please: apt-get install device-tree-compiler"
+ 		exit 1
+-	elif [ "${ARM64_TRUSTZONE}" == "y" ]; then
+-		if ! which python2 >/dev/null 2>&1 ; then
+-			echo "ERROR: No python2"
+-			exit 1
+-		fi
+ 	fi
+ 
+ 	# If we don't plan to have uboot in uboot.img in case of: SPL => Trust => Kernel, creating empty files.
+@@ -801,7 +796,7 @@ select_ini_file
+ handle_args_late
+ sub_commands
+ clean_files
+-make PYTHON=python2 ${ARG_SPL_FWVER} ${ARG_FWVER} CROSS_COMPILE=${TOOLCHAIN} all --jobs=${JOB}
++make ${ARG_SPL_FWVER} ${ARG_FWVER} CROSS_COMPILE=${TOOLCHAIN} all --jobs=${JOB}
+ pack_images
+ finish
+ echo ${TOOLCHAIN}

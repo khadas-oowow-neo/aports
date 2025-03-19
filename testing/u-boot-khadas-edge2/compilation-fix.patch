@@ -1,0 +1,29 @@
+diff --git a/drivers/power/charge_animation.c b/drivers/power/charge_animation.c
+index 89c5db231f..6c006a1f9f 100644
+--- a/drivers/power/charge_animation.c
++++ b/drivers/power/charge_animation.c
+@@ -579,7 +579,7 @@ static int charge_animation_show(struct udevice *dev)
+ 	ulong delta;
+ 	ulong ms = 0, sec = 0;
+ 	int start_idx = 0, show_idx = -1, old_show_idx = IMAGE_RECALC_IDX;
+-	int soc, voltage, current, key_state;
++	int soc = -ENODATA, voltage, current = -ENODATA, key_state;
+ 	int i, charging = 1, ret;
+ 	int boot_mode;
+ 	int first_poll_fg = 1;
+diff --git a/include/command.h b/include/command.h
+index 681084b9ea..1778424260 100644
+--- a/include/command.h
++++ b/include/command.h
+@@ -137,9 +137,9 @@ enum command_ret_t {
+  *			is left unchanged.
+  * @param ticks		If ticks is not null, this function set it to the
+  *			number of ticks the command took to complete.
+- * @return 0 if the command succeeded, 1 if it failed
++ * @return 0 if the command succeeded, else non-zero (CMD_RET_...)
+  */
+-int cmd_process(int flag, int argc, char * const argv[],
++enum command_ret_t cmd_process(int flag, int argc, char *const argv[],
+ 			       int *repeatable, unsigned long *ticks);
+ 
+ void fixup_cmdtable(cmd_tbl_t *cmdtp, int size);

@@ -1,0 +1,67 @@
+# Contributor: He Yangxuan <yangxuan8282@gmail.com>
+# Contributor: Timo Teras <timo.teras@iki.fi>
+# Maintainer: Milan P. Stanić <mps@arvanta.net>
+pkgname=u-boot-khadas-edge2
+pkgver=1.7.3
+pkgrel=0
+pkgdesc="u-boot bootloader common files"
+url="https://www.denx.de/wiki/U-Boot/"
+arch="aarch64"
+license="GPL-2.0-or-later OFL-1.1 BSD-2-Clause BSD-3-Clause WITH eCos-exception-2.0 IBM-pibs
+	ISC LGPL-2.0-only LGPL-2.1-only X11"
+options="!check" # no tests
+_rkbin_commit="2c1be1054e86338285309ecc20fa61fc15fd5437"
+makedepends="
+	bash
+	bc
+	bison
+	coreutils
+	dtc
+	flex
+	gawk
+	gnutls-dev
+	linux-headers
+	ncurses-dev
+	openssl-dev
+	py3-elftools
+	py3-setuptools
+	python3-dev
+	swig
+	util-linux-dev
+	"
+source="https://github.com/khadas/u-boot/archive/refs/tags/khadas-edges-u-boot-2017.09-v${pkgver}-release.tar.gz
+	https://github.com/numbqq/rkbin/archive/${_rkbin_commit}.tar.gz
+	compilation-fix.patch
+	python.patch
+	update-u-boot
+	"
+builddir="$srcdir"/u-boot-khadas-edges-u-boot-2017.09-v${pkgver}-release
+_rkbindir="$srcdir"/rkbin-${_rkbin_commit}
+
+build() {
+	msg "Building u-boot for Khadas Edge2"
+	./make.sh CROSS_COMPILE=$CROSS_COMPILE khadas-edge2-rk3588s
+
+	msg "Packing SPL loader..."
+	./make.sh --spl
+	ln -fs *_loader_*.bin rk3588_spl_loader.bin
+
+	msg "Generating idblock.bin ..."
+	./tools/mkimage -n rk3588 -T rksd -d "${_rkbindir}"/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin:spl/u-boot-spl.bin idblock.bin
+}
+
+package() {
+	mkdir -p "$pkgdir"/usr/share/$pkgname "$pkgdir"/usr/sbin
+	install "$builddir"/idblock.bin "$pkgdir"/usr/share/$pkgname/idblock.bin
+	install "$builddir"/rk3588_spl_loader.bin "$pkgdir"/usr/share/$pkgname/rk3588_spl_loader.bin
+	install "$builddir"/uboot.img "$pkgdir"/usr/share/$pkgname/uboot.img
+	install "$srcdir"/update-u-boot "$pkgdir"/usr/sbin
+}
+
+sha512sums="
+a062f8745e83286b09729c74d3b0965fbc44f84f82ef8268a6c9c7cd9780497cb8371b0f014cd0e678150207dbf1f4e549497ef4af68586c1728d12121e2774b  khadas-edges-u-boot-2017.09-v1.7.3-release.tar.gz
+074a78c73be8764ef7d8253ca63bca9671c875fe5f35fa1b531dcf89d8afc3f675a61bf4afe4a06cd2a068bcef83c95b5c95cd7107650f9358e03940020ad301  2c1be1054e86338285309ecc20fa61fc15fd5437.tar.gz
+9fa978991da2859f2822b7ae79d8972ef602599a155c1e9d1d2147f91f278e9fee5fc4c3084b95a68e905f14e39d87be81f5a60c002b2c368c91b756b0f640e9  compilation-fix.patch
+578b534e024bcff6ee8c7d4dfb3caecd82894a0abfe4648bac87b9c815f3371f577eb3710fed56a718fe510aa9375a93a8597e79a45b476f0e11f5445c0b8073  python.patch
+f1c9da49ab011d02d56848f1d39bccb2815d8fd4b1a5093815a0bf203cf432a55ff1706e32cda874dfa04edb55c959a3822a3e23bcb4d5161ff783d6f8ef0ccc  update-u-boot
+"
