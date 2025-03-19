@@ -24,3 +24,18 @@ CMD sh ~/aports/scripts/mkimage.sh --tag edge \
     --workdir ~/apline.images.build \
     --profile $PROFILENAME
 
+
+exit
+
+<<EOF
+
+# need use edge to
+
+~/aports $ cat /etc/apk/repositories
+#http://dl-cdn.alpinelinux.org/alpine/v3.21/main
+#http://dl-cdn.alpinelinux.org/alpine/v3.21/community
+
+http://dl-cdn.alpinelinux.org/alpine/edge/main
+http://dl-cdn.alpinelinux.org/alpine/edge/community
+
+EOF
