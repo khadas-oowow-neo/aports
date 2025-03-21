@@ -3,7 +3,7 @@
 #= khadas lib
 
 CMD(){
-	echo "# $@"
+	echo "# $@">&2
 	"$@"
 }
 
