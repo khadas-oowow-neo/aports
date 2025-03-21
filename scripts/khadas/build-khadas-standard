@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#= build khadas images
+
+#apk add \
+#	abuild apk-tools alpine-conf busybox fakeroot syslinux xorriso cmd:mksquashfs
+#       grub
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+PROFILENAME=standard
+ARCH=aarch64
+PHOME=~/packages
+
+CMD sh ~/aports/scripts/mkimage.sh --tag edge \
+    --outdir ~/alpine.images \
+    --arch $ARCH \
+    --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --workdir ~/apline.images.build \
+    --profile $PROFILENAME
+
+#    --repository file:///$PHOME/main \
+
+exit
+
+<<EOF
+
+~/alpine.images $ file alpine-standard-edge-aarch64.iso
+alpine-standard-edge-aarch64.iso: ISO 9660 CD-ROM filesystem data (DOS/MBR boot sector) 'alpine-std edge aarch64' (bootable)
+~/alpine.images $ 
+
+EOF
