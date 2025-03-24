@@ -1,0 +1,33 @@
+# Contributor: Artem Lapkin <art@khadas.com>
+# Maintainer: Artem Lapkin <art@khadas.com>
+flavors=khadas-edge2-oowow-neo
+binpkg=linux-edge2-oowow-neo-bin
+pkgname=linux-$flavors-bin
+pkgver=v1
+pkgrel=0
+_gitrev=ac2d94c8f466d6d1d56b5dc818a342b0ce01a750
+pkgdesc="linux kernel khadas edge2 bin repack"
+url="https://github.com/khadas/khadas-linux-kernel"
+arch="aarch64"
+license=HYPHOP
+
+source="$binpkg-$pkgver.tar.gz::https://github.com/khadas/khadas-linux-kernel/releases/download/$binpkg-$pkgver/$binpkg-$pkgver.tar.gz"
+builddir="$srcdir/$binpkg-$pkgver"
+options="!check" # has no test suite
+
+build() {
+	echo make
+}
+
+package() {
+	cd $builddir
+	mkdir -p "$pkgdir/boot"
+	cp -a lib "$pkgdir"
+	cp Image "$pkgdir/boot/vmlinuz-$flavors"
+	cp *.dtb "$pkgdir/boot/"
+	cp .config "$pkgdir/boot/config-$flavors"
+}
+
+sha512sums="
+392480760abb6d5512a485edec485ffaf09d0e1ca82d020db17aac1f9ff68570cb45204d948b7fcc3fbe9dcd21abc9a09aecef36f18bae70c53a54cc0f248d29  linux-edge2-oowow-neo-bin-v1.tar.gz
+"
