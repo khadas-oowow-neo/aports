@@ -1,0 +1,19 @@
+#!/bin/sh
+
+#= build khadas kernels
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+PROFILENAME=khadas
+KERNEL_FLAVOR=khadas-edge2-oowow-neo-bin
+#KERNEL_FLAVOR=rpi
+ARCH=aarch64
+PHOME=~/packages
+
+KERNEL_PKG="linux-$KERNEL_FLAVOR" \
+CBUILDROOT=~/sysroot-$ARCH \
+BOOTSTRAP_REPO="http://dl-cdn.alpinelinux.org/alpine/edge/main" \
+    CMD time ~/aports/scripts/bootstrap.sh $ARCH
