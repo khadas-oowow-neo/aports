@@ -1,0 +1,34 @@
+# Contributor: Artem Lapkin <art@khadas.com>
+# Maintainer: Artem Lapkin <art@khadas.com>
+binpkg=u-boot-khadas-edge2-oowow-bin
+pkgname=u-boot-khadas-edge2-oowow-neo-bin
+pkgver=v1
+pkgrel=0
+pkgdesc="U-boot khadas edge2 bin repack"
+url="https://github.com/khadas/khadas-uboot/"
+arch="aarch64"
+license=HYPHOP
+
+source="$binpkg-$pkgver.tar.gz::https://github.com/khadas/khadas-uboot/releases/download/$binpkg-$pkgver/$binpkg-$pkgver.tar.gz"
+builddir="$srcdir/$binpkg-$pkgver"
+options="!check" # has no test suite
+
+build() {
+	echo make
+}
+
+package() {
+	cd $builddir
+	mkdir -p "$pkgdir/usr/share/$pkgname"
+	cp -a * "$pkgdir/usr/share/$pkgname"
+	mkdir -p "$pkgdir/sbin/"
+	cat <<EOF | tee "$pkgdir/sbin/update-u-boot"
+#!/bin/sh
+echo "update-u-boot $@">&2
+EOF
+	chmod 0755 "$pkgdir/sbin/update-u-boot"
+}
+
+sha512sums="
+3b33564e19300d54775d6d411110bf73e42eb753c807e19b1b47f747f79c1d01e1e9a3cd1ef38135614ad4c631c49fd4a7b1459f275748d252c1d3033c04da96  u-boot-khadas-edge2-oowow-bin-v1.tar.gz
+"
