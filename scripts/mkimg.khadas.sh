@@ -1,19 +1,8 @@
-build_khadas_blobs() {
-#	for i in raspberrypi-bootloader-common raspberrypi-bootloader; do
-	for i in khadas-bootloader; do
-		apk fetch --root "$APKROOT" --quiet --stdout "$i" | tar -C "${DESTDIR}" -zx --strip=1 boot/ || return 1
-	done
-}
-
 khadas_gen_cmdline() {
 	echo "modules=loop,squashfs,sd-mod,usb-storage quiet ${kernel_cmdline}"
 }
 
 khadas_gen_config() {
-#	local arm_64bit=0
-#	case "$ARCH" in
-#		aarch64) arm_64bit=1;;
-#	esac
 	cat <<-EOF
 		kernel=boot/vmlinuz-$kernel_flavors
 		initramfs boot/initramfs-$kernel_flavors
@@ -32,34 +21,62 @@ section_rpi_config() {
 #	build_section khadas_blobs
 }
 
+build_kernel() {
+    local _flavor="$2" _modloopsign= _add
+    shift 3
+    local _pkgs="$@"
+    [ "$modloop_sign" = "yes" ] && _modloopsign="--modloopsign"
+    CMD ./update-kernel2 -v \
+	$_hostkeys \
+	${_abuild_pubkey:+--apk-pubkey $_abuild_pubkey} \
+	$_modloopsign \
+	--media \
+	--keys-dir "$APKROOT/etc/apk/keys" \
+	--flavor "$_flavor" \
+	--arch "$ARCH" \
+	--package "$_pkgs" \
+	--feature "$initfs_features" \
+	--modloopfw "$modloopfw" \
+	--repositories-file "$APKROOT/etc/apk/repositories" \
+	"$DESTDIR" \
+	|| return 1
+    for _add in $boot_addons; do
+	apk fetch --root "$APKROOT" --quiet --stdout $_add | tar -C "${DESTDIR}" -zx boot/
+    done
+}
+
+section_kernels() {
+    local _f _a _pkgs
+    for _f in $kernel_flavors; do
+	_pkgs="linux-$_f $modloop_addons"
+	for _a in $kernel_addons; do
+	    _pkgs="$_pkgs $_a-$_f"
+	done
+	echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs 2>/dev/null | sort
+	
+	local id=$( (echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs | sort) | checksum)
+	build_section kernel $ARCH $_f $id $_pkgs
+	exit 1
+    done
+}
+
 profile_khadas() {
 	profile_base
 	title="Khadas arm device"
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
-	kernel_flavors="khadas-edge2"
+	kernel_flavors="khadas-edge2-oowow-neo-bin"
+#	kernel_flavors="rpi"
 	kernel_cmdline="console=tty1"
 	initfs_features="base squashfs mmc usb kms dhcp https"
 	hostname="khadas"
 	grub_mod=
 }
 
-create_image_imggz() {
-	sync "$DESTDIR"
-	local image_size=$(du -L -k -s "$DESTDIR" | awk '{print $1 + 8192}' )
-	local imgfile="${OUTDIR}/${output_filename%.gz}"
-	dd if=/dev/zero of="$imgfile" bs=1M count=$(( image_size / 1024 ))
-	mformat -i "$imgfile" -N 0 ::
-	mcopy -s -i "$imgfile" "$DESTDIR"/* "$DESTDIR"/.alpine-release ::
-	echo "Compressing $imgfile..."
-	pigz -v -f -9 "$imgfile" || gzip -f -9 "$imgfile"
-}
-
-profile_rpiimg() {
-	profile_rpi
-	title="Raspberry Pi Disk Image"
-	image_name="alpine-rpi"
+profile_khadas_img() {
+	profile_khadas
+	title="Khadas Edge2 Disk Image"
+	image_name="alpine-khadas"
 	image_ext="img.gz"
 }
-
