@@ -1,8 +1,10 @@
 # Contributor: Artem Lapkin <art@khadas.com>
 # Maintainer: Artem Lapkin <art@khadas.com>
-flavors=khadas-edge2-oowow-neo
-binpkg=linux-edge2-oowow-neo-bin
-pkgname=linux-$flavors-bin
+
+flavors=khadas-edge2-oowow-neo-bin
+binpkg=linux-$flavors
+pkgname=linux-$flavors
+
 pkgver=v1
 pkgrel=0
 _gitrev=ac2d94c8f466d6d1d56b5dc818a342b0ce01a750
@@ -18,16 +20,32 @@ options="!check" # has no test suite
 build() {
 	echo make
 }
+CMD(){
+    echo "# $@">&2
+    "$@"
+}
 
 package() {
 	cd $builddir
-	mkdir -p "$pkgdir/boot"
-	cp -a lib "$pkgdir"
-	cp Image "$pkgdir/boot/vmlinuz-$flavors"
-	cp *.dtb "$pkgdir/boot/"
-	cp .config "$pkgdir/boot/config-$flavors"
+	CMD mkdir -p \
+	    "$pkgdir/boot" \
+	    "$pkgdir/lib/modules"
+	
+	for V in lib/modules/*.*; do
+	    [ -d "$V" ] && break
+	    V=
+	done
+	V=${V##*/}
+	echo "KERNEL_V: $V"
+	ls -l1
+	CMD cp -a "lib/modules/$V" "$pkgdir/lib/modules"
+	CMD ln -s "$V" "$pkgdir/lib/modules/$V-$flavors"
+	CMD cp Image "$pkgdir/boot/vmlinuz-$flavors"
+	CMD cp *.dtb "$pkgdir/boot/"
+	CMD cp System.map "$pkgdir/boot/"
+	CMD cp .config "$pkgdir/boot/config-$flavors"
 }
 
 sha512sums="
-392480760abb6d5512a485edec485ffaf09d0e1ca82d020db17aac1f9ff68570cb45204d948b7fcc3fbe9dcd21abc9a09aecef36f18bae70c53a54cc0f248d29  linux-edge2-oowow-neo-bin-v1.tar.gz
+bc46fa8305bcd7e3c6f915ec38d67716db62003f39bac421fefb2b0b09b0b54a96e45a6ca779cdfef3eb72f72201d0e9e28dfc4089b60c6e6041f4f5f7315a07  linux-khadas-edge2-oowow-neo-bin-v1.tar.gz
 "
