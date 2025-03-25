@@ -10,19 +10,25 @@ CMD(){
     "$@"
 }
 
-PROFILENAME=base
-PROFILENAME=rpi
-PROFILENAME=khadas
+PROFILENAME=khadas_img
 ARCH=aarch64
 PHOME=~/packages
+WDIR=~/apline.images.build
+
+rm -rf $WDIR
 
 CMD sh ~/aports/scripts/mkimage.sh --tag edge \
     --outdir ~/alpine.images \
     --arch $ARCH \
+    --repository file:///$PHOME/testing \
     --repository file:///$PHOME/main \
     --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --workdir ~/apline.images.build \
+    --workdir $WDIR \
     --profile $PROFILENAME
+
+
+#    --repository file:///$PHOME/test \
+#    --repository file:///$PHOME/main \
 
 
 exit
