@@ -1,0 +1,13 @@
+#!/bin/sh
+
+## hyphop ##
+
+#= build khadas image
+
+cd $(dirname $0)/..
+
+#(
+time ./khadas/build-khadas-images
+ls ~/alpine.images/alpine-khadas-edge-aarch64.img.gz -l1
+#) 2>&1 > ~/khadas-build-$(date +%s).log
+
