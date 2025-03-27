@@ -21,10 +21,11 @@ CMD sh ~/aports/scripts/mkimage.sh --tag edge \
     --outdir ~/alpine.images \
     --arch $ARCH \
     --repository file:///$PHOME/testing \
-    --repository file:///$PHOME/main \
     --repository https://dl-cdn.alpinelinux.org/alpine/edge/main \
     --workdir $WDIR \
     --profile $PROFILENAME
+
+#    --repository file:///$PHOME/main \
 
 
 #    --repository file:///$PHOME/test \
