@@ -193,7 +193,7 @@ ignore_sigs() {
 
 clean_up() {
 	echo IGNORE CLEAN
-	return
+	return 0
 	
 	set +e
 	ignore_sigs
@@ -220,12 +220,25 @@ sign_modloop() {
 		"$in"
 }
 
+#"
+
 trap clean_up EXIT $SIGNALS
 
 
 if [ "$SUPERUSER" ] && [ -z "$FAKEROOTKEY" ]; then
 	apk add $QUIET_OPT --update-cache -t $VIRTUAL mkinitfs squashfs-tools kmod
 fi
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+echo "DEBUG
+FAKEROOTKEY: $FAKEROOTKEY
+SUPER: $SUPERUSER
+FEATURES: $features
+"
 
 if [ -z "$features" ]; then
 	. "$ROOT"/etc/mkinitfs/mkinitfs.conf
@@ -363,19 +376,35 @@ fi
 
 case $ARCH in
 	armhf) mksfs="-Xbcj arm" ;;
-	armv7|aarch64) mksfs="-Xbcj arm,armthumb" ;;
+#	armv7|aarch64) mksfs="-Xbcj arm,armthumb" ;;
 	x86|x86_64) mksfs="-Xbcj x86" ;;
 	*) mksfs=
 esac
-mksquashfs $MODLOOP "$STAGING/$MODIMG" $MKSQUASHFS_OPTS -comp xz -exit-on-error $mksfs
+
+#CMP=xz
+CMP=${CMP:-zstd}
+
+MKSQUASHFS_OPTS=
+CMD mksquashfs $MODLOOP "$STAGING/$MODIMG" $MKSQUASHFS_OPTS -comp $CMP -exit-on-error $mksfs
 
 if [ -n "$MODLOOPSIGN" ]; then
 	sign_modloop "$STAGING/$MODIMG"
 	MKINITFS_ARGS="$MKINITFS_ARGS -s $tmpdir/$MODLOOPSIG"
 fi
 
-$MOCK mkinitfs $MKINITFS_ARGS -q -b $ROOTFS -F "$features base squashfs" \
+
+#CMD mkdir -p "$ROOTFS"/etc/mkinitfs/features.d/
+#echo "/sbin/nlplug-findfs" >> "$ROOTFS"/etc/mkinitfs/features.d/base.files
+
+CMD $MOCK mkinitfs $MKINITFS_ARGS -q -b $ROOTFS -F "$features base squashfs" \
 	-o "$STAGING/initramfs-$FLAVOR" "$KVER"
+
+ls -l1 "$STAGING/initramfs-$FLAVOR"
+echo ----
+gzip -dc "$STAGING/initramfs-$FLAVOR" | cpio -t
+echo ====
+
+#exit 1
 
 for file in System.map config vmlinuz; do
 	cp "$BOOT/$file-$KVER" "$STAGING" 2>/dev/null \
