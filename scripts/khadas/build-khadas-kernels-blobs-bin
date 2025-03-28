@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#= build khadas kernels
+
+CMD(){
+    echo "# $@"
+    "$@"
+}
+
+ARCH=aarch64
+PHOME=~/packages
+
+KERNEL_PKG="linux-khadas-edge2-brcm-firmware" \
+CBUILDROOT=~/sysroot-$ARCH \
+BOOTSTRAP_REPO="http://dl-cdn.alpinelinux.org/alpine/edge/main" \
+    CMD time ~/aports/scripts/bootstrap.sh $ARCH
