@@ -10,6 +10,8 @@ CMD(){
     "$@"
 }
 
+cd $(dirname $0)/..
+
 PROFILENAME=khadas_img
 ARCH=aarch64
 PHOME=~/packages
