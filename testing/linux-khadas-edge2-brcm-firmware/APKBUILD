@@ -1,0 +1,37 @@
+# Contributor: Artem Lapkin <art@khadas.com>
+# Maintainer: Artem Lapkin <art@khadas.com>
+
+pkgname=linux-khadas-edge2-brcm-firmware
+binpkg=$pkgname
+
+pkgver=v1
+pkgrel=0
+#_gitrev=ac2d94c8f466d6d1d56b5dc818a342b0ce01a750
+pkgdesc="linux kernel khadas edge2 WLAN and BT firmware"
+url="https://github.com/khadas/khadas-linux-kernel"
+arch="aarch64"
+license=HYPHOP
+
+source="$binpkg-$pkgver.tar.gz::https://github.com/khadas/khadas-linux-kernel/releases/download/$binpkg-$pkgver/$binpkg-$pkgver.tar.gz"
+builddir="$srcdir/$binpkg-$pkgver"
+options="!check" # has no test suite
+
+build() {
+    echo make $pkgname
+}
+
+CMD(){
+    echo "# $@">&2
+    "$@"
+}
+
+package() {
+    cd $builddir
+    find lib
+    CMD mkdir -p "$pkgdir"
+    CMD cp -a "lib" "$pkgdir"
+}
+
+sha512sums="
+697b74c6d8911834b035aaad7e3ff253bff2958fe228f6426d6eabedc6341f2adf4b70b60e3be8394f1896590d46eec78c7dd8b622920273a98a8fc821a0f1d3 linux-khadas-edge2-brcm-firmware-v1.tar.gz
+"
