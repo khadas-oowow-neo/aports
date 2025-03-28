@@ -1,8 +1,11 @@
-khadas_gen_cmdline() {
+
+khadas_gen_cmdline_UNUSED() {
+	echo "!!! khadas gen cmdline">&2
 	echo "modules=loop,squashfs,sd-mod,usb-storage quiet ${kernel_cmdline}"
 }
 
-khadas_gen_config() {
+khadas_gen_config_UNSUSED() {
+	echo "!!! khadas gen config">&2
 	cat <<-EOF
 		kernel=boot/vmlinuz-$kernel_flavors
 		initramfs boot/initramfs-$kernel_flavors
@@ -10,16 +13,17 @@ khadas_gen_config() {
 	EOF
 }
 
-build_khadas_config() {
-	khadas_gen_cmdline > "${DESTDIR}"/cmdline.txt
-	khadas_gen_config > "${DESTDIR}"/config.txt
-}
+#build_khadas_config() {
+#	echo "BUILD KHADAS CONFIG"
+#	khadas_gen_cmdline > "${DESTDIR}"/cmdline.txt
+#	khadas_gen_config > "${DESTDIR}"/config.txt
+#}
 
-section_rpi_config() {
-	[ "$hostname" = "khadas" ] || return 0
-	build_section khadas_config $( (khadas_gen_cmdline ; khadas_gen_config) | checksum )
+#section_rpi_config() {
+#	[ "$hostname" = "khadas" ] || return 0
+#	build_section khadas_config $( (khadas_gen_cmdline ; khadas_gen_config) | checksum )
 #	build_section khadas_blobs
-}
+#}
 
 build_kernel() {
     local _flavor="$2" _modloopsign= _add
@@ -55,24 +59,31 @@ section_kernels() {
 	echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs 2>/dev/null | sort
 	
 	local id=$( (echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs | sort) | checksum)
-	build_section kernel $ARCH $_f $id $_pkgs
+	build_section kernel $ARCH $_f $id $_pkgs linux-khadas-edge2-brcm-firmware
     done
 }
 
 profile_khadas() {
 	profile_base
-	title="Khadas arm device"
+	title="Khadas ARM devices"
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
 	kernel_flavors="khadas-edge2-oowow-neo-bin"
-#	kernel_flavors="rpi"
-	#kernel_cmdline="console=tty1"
 	kernel_append="modules=loop,squashfs,sd-mod,usb-storage debug_init "
 	kernel_cmdline="net.ifnames=0 video=HDMI-A-1:1920x1080@60 panic=10 fbcon=font:TER16x32 earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0"
 	initfs_features="base squashfs mmc usb kms dhcp https "
+	modloopfw="
+brcm/BCM.hcd
+brcm/BCM4362A2.hcd
+brcm/clm_bcm43752a2_pcie_ag.blob
+brcm/config.txt
+brcm/fw_bcm43752a2_pcie_ag.bin
+brcm/fw_bcm43752a2_pcie_ag_apsta.bin
+brcm/nvram_AP6275P.txt
+"
 	hostname="khadas"
-	apks="$apks sfdisk"
+	apks="$apks sfdisk linux-khadas-edge2-brcm-firmware"
 	grub_mod=
 }
 
