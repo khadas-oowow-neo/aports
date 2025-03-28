@@ -347,7 +347,9 @@ find $ROOTFS/lib/modules -type f -name "*.ko*" | xargs modinfo -k $KVER -F firmw
 done
 
 # install extra firmware files in modloop (i.e. not detected by modinfo)
+
 for _xfw in $modloopfw; do
+echo "Firmware blobs > modloop:: $_xfw"
 	if [ -f "$ROOTFS/lib/firmware/$_xfw" ]; then
 		install -pD "$ROOTFS/lib/firmware/$_xfw" \
 			"$MODLOOP"/modules/firmware/"$_xfw"
@@ -382,7 +384,7 @@ case $ARCH in
 esac
 
 #CMP=xz
-CMP=${CMP:-zstd}
+CMP=${CMP:-gzip}
 
 MKSQUASHFS_OPTS=
 CMD mksquashfs $MODLOOP "$STAGING/$MODIMG" $MKSQUASHFS_OPTS -comp $CMP -exit-on-error $mksfs
