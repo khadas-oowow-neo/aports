@@ -83,7 +83,13 @@ brcm/fw_bcm43752a2_pcie_ag_apsta.bin
 brcm/nvram_AP6275P.txt
 "
 	hostname="khadas"
-	apks="$apks sfdisk linux-khadas-edge2-brcm-firmware"
+	apks="$apks
+    sfdisk nano
+    linux-lts-edge2
+    linux-khadas-edge2-oowow-neo-bin
+    linux-khadas-edge2-brcm-firmware
+    u-boot-khadas-edge2-oowow-neo-bin
+"
 	grub_mod=
 }
 
