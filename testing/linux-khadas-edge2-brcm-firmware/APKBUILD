@@ -30,6 +30,7 @@ package() {
     find lib
     CMD mkdir -p "$pkgdir"
     CMD cp -a "lib" "$pkgdir"
+    CMD ln -s "nvram_AP6275P.txt" "$pkgdir"/lib/firmware/brcm/nvram_ap6275p.txt
 }
 
 sha512sums="
