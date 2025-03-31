@@ -2,6 +2,7 @@
 
 _flavor=edges-6.1.y
 _flavor=khadas-edge2
+_flavor=lts-edge2
 
 pkgname=linux-$_flavor
 pkgver=1.7.3
@@ -12,6 +13,8 @@ depends="initramfs-generator"
 _depends_dev="perl gmp-dev mpc1-dev mpfr-dev elfutils-dev bash flex bison zstd"
 makedepends="$_depends_dev sed installkernel bc linux-headers linux-firmware-any openssl-dev>3 mawk
 	diffutils findutils zstd pahole python3 gcc>=13.1.1_git20230624"
+makedepends="$_depends_dev sed installkernel bc linux-headers openssl-dev>3 mawk
+	diffutils findutils zstd pahole python3 gcc"
 options="!strip !check"
 source="https://github.com/khadas/linux/archive/refs/tags/khadas-edges-linux-6.1-v${pkgver}-release.tar.gz
 	https://github.com/khadas/linux/commit/53f2bfce46d8fd5c9d14d0067ea73144da55748b.patch
@@ -122,7 +125,7 @@ _package() {
 
 # main flavor installs in $pkgdir
 package() {
-	depends="$depends linux-firmware-any"
+#	depends="$depends linux-firmware-any"
 	_package "$pkgdir"
 }
 
