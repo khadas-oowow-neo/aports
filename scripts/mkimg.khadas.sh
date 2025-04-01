@@ -30,7 +30,7 @@ build_kernel() {
     shift 3
     local _pkgs="$@"
     [ "$modloop_sign" = "yes" ] && _modloopsign="--modloopsign"
-    CMD ./update-kernel2 -v \
+    CMD "$(dirname "$0")"/khadas/update-kernel2 -v \
 	$_hostkeys \
 	${_abuild_pubkey:+--apk-pubkey $_abuild_pubkey} \
 	$_modloopsign \
@@ -81,6 +81,7 @@ brcm/config.txt
 brcm/fw_bcm43752a2_pcie_ag.bin
 brcm/fw_bcm43752a2_pcie_ag_apsta.bin
 brcm/nvram_AP6275P.txt
+brcm/nvram_ap6275p.txt
 "
 	hostname="khadas"
 	apks="$apks
