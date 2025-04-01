@@ -2,10 +2,11 @@
 
 _flavor=edges-6.1.y
 _flavor=khadas-edge2
-_flavor=lts-edge2
+_flavor=lts_edge2
 
 pkgname=linux-$_flavor
-pkgver=1.7.3
+pkgver=6.1.x
+srcver=1.7.3
 pkgrel=0
 pkgdesc="Linux kernel for Edge 2"
 url="https://www.khadas.com"
@@ -16,11 +17,11 @@ makedepends="$_depends_dev sed installkernel bc linux-headers linux-firmware-any
 makedepends="$_depends_dev sed installkernel bc linux-headers openssl-dev>3 mawk
 	diffutils findutils zstd pahole python3 gcc"
 options="!strip !check"
-source="https://github.com/khadas/linux/archive/refs/tags/khadas-edges-linux-6.1-v${pkgver}-release.tar.gz
+source="https://github.com/khadas/linux/archive/refs/tags/khadas-edges-linux-6.1-v${srcver}-release.tar.gz
 	https://github.com/khadas/linux/commit/53f2bfce46d8fd5c9d14d0067ea73144da55748b.patch
 	"
 #subpackages="$pkgname-dev:_dev $pkgname-doc"
-builddir="$srcdir"/linux-khadas-edges-linux-6.1-v${pkgver}-release
+builddir="$srcdir"/linux-khadas-edges-linux-6.1-v${srcver}-release
 arch="aarch64"
 _kerarch="arm64"
 license="GPL-2.0-only"
