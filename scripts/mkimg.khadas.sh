@@ -69,7 +69,8 @@ profile_khadas() {
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
-	kernel_flavors="khadas-edge2-oowow-neo-bin"
+	#kernel_flavors="khadas-edge2-oowow-neo-bin"
+	kernel_flavors="lts_edge2"
 	kernel_append="modules=loop,squashfs,sd-mod,usb-storage debug_init "
 	kernel_cmdline="net.ifnames=0 video=HDMI-A-1:1920x1080@60 panic=10 fbcon=font:TER16x32 earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0"
 	initfs_features="base squashfs mmc usb kms dhcp https "
@@ -86,7 +87,7 @@ brcm/nvram_ap6275p.txt
 	hostname="khadas"
 	apks="$apks
     sfdisk nano
-    linux-lts-edge2
+    linux-$kernel_flavors
     linux-khadas-edge2-oowow-neo-bin
     linux-khadas-edge2-brcm-firmware
     u-boot-khadas-edge2-oowow-neo-bin
@@ -128,19 +129,26 @@ EOF
     CMD mcopy -s -i "$part1_img" * .alpine-release ::
     ) || return 1
 
-    local FDT=boot/dtbs-$kernel_flavors/rk3588s-khadas-edge2.dtb
-    
+    #./boot/dtbs-lts_edge2
+    #./boot/dtbs-lts_edge2/rockchip
+    #./boot/dtbs-lts_edge2/rockchip/rk3588s-khadas-edge2.dtb
+
+    FDT=$(
+    cd "$DESTDIR";
+    find -name *khadas*.dtb
+    )
+
     CMD mmd -i "$part1_img" ::boot/extlinux
     cat <<EOF | tee /dev/stderr | CMD mcopy -i "$part1_img" - ::boot/extlinux/extlinux.conf
 #MENU background /boot/logo.bmp
-LABEL oowow-neo
+LABEL $kernel_flavors
     LINUX /boot/vmlinuz-$kernel_flavors
     INITRD /boot/initramfs-$kernel_flavors
-    FDT /$FDT
+    FDT /${FDT#./}
     APPEND $kernel_append $kernel_cmdline
 
 timeout 10
-default oowow
+default $kernel_flavors
 EOF
 
     cat <<EOF | tee /dev/stderr | CMD mcopy -i "$part1_img" - ::boot/uEnv.txt
