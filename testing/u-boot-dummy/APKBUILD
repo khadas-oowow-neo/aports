@@ -1,0 +1,26 @@
+# Contributor: hyphop <art@oowow.neo>
+# Maintainer: hyphop <art@oowow.neo>
+pkgname=u-boot
+pkgver=2029
+pkgrel=1
+pkgdesc="u-boot dummy"
+url="https://docs.khadas.com/software/uboot-dummy"
+license="hyphop"
+arch="all"
+options="!check" # no tests
+
+source="
+README.txt
+update-u-boot
+"
+
+package() {
+	mkdir -p "$pkgdir"/usr/share/$pkgname/edge2 "$pkgdir"/usr/sbin
+	install "$srcdir"/README.txt "$pkgdir"/usr/share/$pkgname/README.txt
+	install "$srcdir"/update-u-boot "$pkgdir"/usr/sbin
+}
+
+sha512sums="
+cb9601eff14913129c5d58e00a8098f24f432a6c12cf35815e8fc8eaaf9dfbfa6fa2fb36b70b9e6052660982f25e651e377daacad6e83e0edb43ddb64da11ecb  README.txt
+d654e1e5d4f6c5127fe65ecd420ab4736375c0cb0f772b73eb09c419ae0c7e5e444541527a68e78ef5955166080e950c0cc7abdebf67d5a6814cb57f9b0fdb80  update-u-boot
+"
