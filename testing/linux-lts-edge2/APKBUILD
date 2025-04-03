@@ -1,11 +1,9 @@
 # Maintainer: Gunjan Gupta <gunjan@wesion.com>
 
-_flavor=edges-6.1.y
-_flavor=khadas-edge2
 _flavor=lts_edge2
 
 pkgname=linux-$_flavor
-pkgver=6.1.x
+pkgver=6.1
 srcver=1.7.3
 pkgrel=0
 pkgdesc="Linux kernel for Edge 2"
