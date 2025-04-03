@@ -1,7 +1,7 @@
 # Contributor: Artem Lapkin <art@khadas.com>
 # Maintainer: Artem Lapkin <art@khadas.com>
 
-flavors=khadas-edge2-oowow-neo-bin
+flavors=oowow_edge2
 binpkg=linux-$flavors
 pkgname=linux-$flavors
 
@@ -29,25 +29,20 @@ CMD(){
 
 package() {
 	cd $builddir
-	CMD mkdir -p \
-	    "$pkgdir/boot" \
-	    "$pkgdir/lib/modules"
 	
-	for V in lib/modules/*.*; do
-	    [ -d "$V" ] && break
-	    V=
-	done
-	V=${V##*/}
-	echo "KERNEL_V: $V"
-	ls -l1
-	CMD cp -a "lib/modules/$V" "$pkgdir/lib/modules"
-	CMD ln -s "$V" "$pkgdir/lib/modules/$V-$flavors"
-	CMD cp Image "$pkgdir/boot/vmlinuz-$flavors"
-	CMD cp *.dtb "$pkgdir/boot/"
-	CMD cp System.map "$pkgdir/boot/"
-	CMD cp .config "$pkgdir/boot/config-$flavors"
+	CMD mkdir -p \
+	    "$pkgdir"/boot \
+	    "$pkgdir"/lib/modules \
+	    "$pkgdir"/usr/share/kernel/$flavors
+
+	CMD cp -a lib "$pkgdir"
+	CMD cp kernel.release "$pkgdir"/usr/share/kernel/$flavors
+	CMD cp Image "$pkgdir"/boot/vmlinuz-$flavors
+	CMD cp -a dtbs "$pkgdir"/boot/dtbs-$flavors
+	CMD cp System.map "$pkgdir"/boot/System.map-$flavors
+	CMD cp .config "$pkgdir"/boot/config-$flavors
 }
 
 sha512sums="
-bc46fa8305bcd7e3c6f915ec38d67716db62003f39bac421fefb2b0b09b0b54a96e45a6ca779cdfef3eb72f72201d0e9e28dfc4089b60c6e6041f4f5f7315a07  linux-khadas-edge2-oowow-neo-bin-v1.tar.gz
+13f858635dc5cdbeef4abd2df5d40b225a0da0044f5bbda39db6d62722d3f1d2c73733adeb2f93fc91726302abd7daa5ffc231a395aec0f0ec82cc5e8a06dbda  linux-oowow_edge2-v1.tar.gz
 "
