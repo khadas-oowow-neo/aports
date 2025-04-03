@@ -69,9 +69,11 @@ profile_khadas() {
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
-	#kernel_flavors="khadas-edge2-oowow-neo-bin"
-	kernel_flavors="lts_edge2"
-	kernel_append="modules=loop,squashfs,sd-mod,usb-storage debug_init "
+#	kernel_flavors=${KERNEL_FLAVORS:-lts_edge2}
+	kernel_flavors=${KERNEL_FLAVORS:-oowow_edge2}
+#	kernel_flavors="lts_edge2"
+	
+	kernel_append="modules=loop,squashfs,sd-mod,usb-storage $DEBUG_INIT "
 	kernel_cmdline="net.ifnames=0 video=HDMI-A-1:1920x1080@60 panic=10 fbcon=font:TER16x32 earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0"
 	initfs_features="base squashfs mmc usb kms dhcp https "
 	modloopfw="
@@ -88,9 +90,8 @@ brcm/nvram_ap6275p.txt
 	apks="$apks
     sfdisk nano
     linux-$kernel_flavors
-    linux-khadas-edge2-oowow-neo-bin
     linux-khadas-edge2-brcm-firmware
-    u-boot-khadas-edge2-oowow-neo-bin
+    $APKS_EXTRA
 "
 	grub_mod=
 }
@@ -105,6 +106,7 @@ profile_khadas_img() {
 create_image_imggz() {
     echo "KHADAS img gz"
     sync "$DESTDIR"
+    find $DESTDIR
     CMD du -L -k -s "$DESTDIR"
     local part1_start=24576 # 512 byte blocks
 
@@ -164,7 +166,16 @@ fdt_overlays_dir=
 fdt_overlays=
 EOF
 
+
+    ASETUP=${ASETUP:-~/oowow-neo-dev/setup/alpine-setup*}
+    [ "$ASETUP" ] && {
+	CMD mcopy -vi "$part1_img" $ASETUP ::
+    }
+
 #   CMD mdir -/ -i "$part1_img" ::
+    ls -l1 $imgfile
     echo "Compressing $imgfile..."
     CMD pigz -v -k -f -9 "$imgfile" || CMD gzip -f -9 "$imgfile"
+    ls -l1 $imgfile.gz
+
 }
