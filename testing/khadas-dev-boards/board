@@ -1,0 +1,10 @@
+#!/bin/sh
+
+## hyphop ##
+
+#= board information
+
+MODEL=$(cat /sys/firmware/devicetree/base/model)
+
+echo "board: $MODEL"
+

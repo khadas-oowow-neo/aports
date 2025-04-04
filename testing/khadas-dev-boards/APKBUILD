@@ -1,0 +1,39 @@
+# Contributor: Artem Lapkin <art@khadas.com>
+# Maintainer: Artem Lapkin <art@khadas.com>
+
+pkgname=khadas-dev-boards
+binpkg=$pkgname
+
+pkgver=v1
+pkgrel=0
+pkgdesc="khadas developers tools"
+url="https://github.com/oowow-neo/khadas-dev-boards"
+arch="aarch64"
+license=HYPHOP
+
+source="
+board
+"
+
+builddir="$srcdir/$binpkg-$pkgver"
+options="!check" # has no test suite
+
+build() {
+    echo make $pkgname
+}
+
+CMD(){
+    echo "# $@">&2
+    "$@"
+}
+
+package() {
+    CMD mkdir -p "$pkgdir/usr/sbin"
+    for a in $source; do
+	CMD install -Dm755 "$srcdir"/$a "$pkgdir"/usr/sbin/
+    done
+}
+
+sha512sums="
+01f34cca95ebfc88ddf1960ba030fd573373a5c4e0a52eebe11746cfef9683108eacc9e27e6b1763ad2b3ec98f187f2381c27fbf825a7992dda6f606951226a5  board
+"
