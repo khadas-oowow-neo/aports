@@ -56,10 +56,11 @@ section_kernels() {
 	for _a in $kernel_addons; do
 	    _pkgs="$_pkgs $_a-$_f"
 	done
+	
 	echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs 2>/dev/null | sort
 	
 	local id=$( (echo "$initfs_features::$_hostkeys" ; apk fetch --root "$APKROOT" --simulate alpine-base $_pkgs | sort) | checksum)
-	build_section kernel $ARCH $_f $id $_pkgs linux-khadas-edge2-brcm-firmware
+	build_section kernel $ARCH $_f $id $_pkgs
     done
 }
 
@@ -69,11 +70,13 @@ profile_khadas() {
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
+	modloop_addons="linux-firmware-brcm-edge2-khadas khadas-dev-boards"
+
 #	kernel_flavors=${KERNEL_FLAVORS:-lts_edge2}
 	kernel_flavors=${KERNEL_FLAVORS:-oowow_edge2}
 #	kernel_flavors="lts_edge2"
 	
-	kernel_append="modules=loop,squashfs,sd-mod,usb-storage $DEBUG_INIT "
+	kernel_append="modules=loop,squashfs,sd-mod,usb-storage,cdc_ncm $KERNEL_CMDLINE_APPEND "
 	kernel_cmdline="net.ifnames=0 video=HDMI-A-1:1920x1080@60 panic=10 fbcon=font:TER16x32 earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0"
 	initfs_features="base squashfs mmc usb kms dhcp https "
 	modloopfw="
@@ -90,7 +93,6 @@ brcm/nvram_ap6275p.txt
 	apks="$apks
     sfdisk nano
     linux-$kernel_flavors
-    linux-khadas-edge2-brcm-firmware
     $APKS_EXTRA
 "
 	grub_mod=
@@ -128,7 +130,11 @@ EOF
     CMD mformat -i "$part1_img" -N 0 ::
     (
     CMD cd $DESTDIR
-    CMD mcopy -s -i "$part1_img" * .alpine-release ::
+    echo "DATE: $(date)
+SYSTEM: $(uname -a)
+USER: $(whoami) $OLDPWD $SSH_CLIENT
+" | tee .build-info
+    CMD mcopy -s -i "$part1_img" * .alpine-release .build-info ::
     ) || return 1
 
     #./boot/dtbs-lts_edge2
@@ -173,9 +179,11 @@ EOF
     }
 
 #   CMD mdir -/ -i "$part1_img" ::
+
     ls -l1 $imgfile
     echo "Compressing $imgfile..."
     CMD pigz -v -k -f -9 "$imgfile" || CMD gzip -f -9 "$imgfile"
     ls -l1 $imgfile.gz
+    md5sum $imgfile.gz | tee $imgfile.gz.md5sum
 
 }
