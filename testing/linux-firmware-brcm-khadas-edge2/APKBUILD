@@ -1,12 +1,11 @@
 # Contributor: Artem Lapkin <art@khadas.com>
 # Maintainer: Artem Lapkin <art@khadas.com>
 
-pkgname=linux-khadas-edge2-brcm-firmware
-binpkg=$pkgname
+pkgname=linux-firmware-brcm-edge2-khadas
+binpkg=linux-khadas-edge2-brcm-firmware
 
 pkgver=v1
 pkgrel=0
-#_gitrev=ac2d94c8f466d6d1d56b5dc818a342b0ce01a750
 pkgdesc="linux kernel khadas edge2 WLAN and BT firmware"
 url="https://github.com/khadas/khadas-linux-kernel"
 arch="aarch64"
