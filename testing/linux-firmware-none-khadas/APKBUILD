@@ -1,0 +1,30 @@
+# Contributor: Artem Lapkin <art@khadas.com>
+# Maintainer: Artem Lapkin <art@khadas.com>
+
+pkgname=linux-firmware-none
+#linux-firmware-none-20250311-r0.apk
+pkgver=21250505
+pkgrel=0
+pkgdesc="meta packet for khadas boards firmware only"
+url="https://github.com/oowow-neo/khadas-dev-boards"
+#arch="aarch64"
+arch="noarch"
+
+license=HYPHOP
+
+depends="
+nano
+khadas-dev-boards
+linux-firmware-brcm-edge2-khadas
+"
+
+package(){
+    :
+}
+
+package() {
+    mkdir -p "$pkgdir"
+}
+
+
+options="!check" # has no test suite
