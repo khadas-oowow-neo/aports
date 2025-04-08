@@ -1,7 +1,7 @@
 # Contributor: Artem Lapkin <art@khadas.com>
 # Maintainer: Artem Lapkin <art@khadas.com>
 
-pkgname=linux-firmware-brcm-edge2-khadas
+pkgname=linux-firmware-brcm-khadas-edge2
 binpkg=linux-khadas-edge2-brcm-firmware
 
 pkgver=v1
@@ -25,7 +25,7 @@ CMD(){
 }
 
 package() {
-    cd $builddir
+    cd "$builddir"
     find lib
     CMD mkdir -p "$pkgdir"
     CMD cp -a "lib" "$pkgdir"
