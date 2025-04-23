@@ -105,6 +105,16 @@ profile_khadas_img() {
 	image_ext="img.gz"
 }
 
+profile_oowow_img() {
+	KERNEL_CMDLINE_APPEND=${KERNEL_CMDLINE_APPEND:-pkgs=oowow-base}
+	profile_khadas
+	title="Khadas Edge2 OOWOW Image"
+	image_name="oowow-neo"
+	initfs_features="base squashfs mmc usb kms dhcp "
+	apks="oowow-base sfdisk nano dropbear"
+	image_ext="img.gz"
+}
+
 create_image_imggz() {
     echo "KHADAS img gz"
     sync "$DESTDIR"
@@ -128,8 +138,33 @@ EOF
 
     local part1_img="$imgfile@@$((part1_start*512))"
     CMD mformat -i "$part1_img" -N 0 ::
+    local kernel="boot/vmlinuz-$kernel_flavors"
+
     (
     CMD cd $DESTDIR
+
+    [ "" ] && { # kernel compress / disabled - uboot buggy
+    # apk add xz
+    # apk add u-boot-tools
+    KERNEL_COMPRESS=${KERNEL_COMPRESS:-lzma}
+    CMD lzma -T4 -e -9 --block-size=3M -c $kernel > $kernel.$KERNEL_COMPRESS
+    #kernel_addr_c=0x05480000
+    #kernel_addr_r=0x00400000
+    KERNEL_LOAD=0x05480000
+
+    CMD mkimage -A arm64 \
+    -O linux \
+    -T kernel \
+    -C lzma \
+    -a $KERNEL_LOAD \
+    -e $KERNEL_LOAD \
+    -n uImage \
+    -d "$kernel.$KERNEL_COMPRESS" "$kernel"
+
+    CMD ls -l1 $kernel*
+    CMD rm $kernel.$KERNEL_COMPRESS
+    } # end of kernel compress block
+
     echo "DATE: $(date)
 SYSTEM: $(uname -a)
 USER: $(whoami) $OLDPWD $SSH_CLIENT
