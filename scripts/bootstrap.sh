@@ -8,6 +8,11 @@ if [ "$1" = "-k" ] || [ "$1" = "--keep" ]; then
 	shift
 fi
 
+if [ "$1" = "-K" ] ; then
+	abuild_opts="$abuild_opts -K"
+	shift
+fi
+
 TARGET_ARCH="$1"
 SUDO_APK=abuild-apk
 
