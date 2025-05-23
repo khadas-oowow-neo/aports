@@ -1,7 +1,7 @@
 # Contributor: Artem Lapkin <art@khadas.com>
 # Maintainer: Artem Lapkin <art@khadas.com>
 
-pkgname=linux-firmware-brcm-khadas-edge2
+pkgname=linux-firmware-bcmdhd
 binpkg=linux-khadas-edge2-brcm-firmware
 
 pkgver=v1
