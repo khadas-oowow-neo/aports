@@ -70,7 +70,7 @@ profile_khadas() {
 	desc="Edge2 ..."
 	image_ext="tar.gz"
 	arch="aarch64"
-	modloop_addons="linux-firmware-brcm-khadas-edge2 khadas-dev-boards"
+	modloop_addons="linux-firmware-bcmdhd khadas-dev-boards"
 
 #	kernel_flavors=${KERNEL_FLAVORS:-lts_edge2}
 	kernel_flavors=${KERNEL_FLAVORS:-oowow_edge2}
@@ -208,7 +208,7 @@ fdt_overlays=
 EOF
 
 
-    ASETUP=${ASETUP:-~/oowow-neo-dev/setup/alpine-setup*}
+    ASETUP=${ASETUP:-~/oowow-neo-dev/setup/alpine-*}
     [ "$ASETUP" ] && {
 	CMD mcopy -vi "$part1_img" $ASETUP ::
     }
