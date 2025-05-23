@@ -4,7 +4,7 @@
  static void dhd_hang_process(struct work_struct *work_data);
  #endif /* OEM_ANDROID */
  MODULE_LICENSE("GPL and additional rights");
-+MODULE_FIRMWARE("brcm/nvram_ap6275p.txt");
++MODULE_FIRMWARE("bcmdhd/nvram_ap6275p.txt");
  
  #if defined(MULTIPLE_SUPPLICANT)
  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25))
