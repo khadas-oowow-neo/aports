@@ -1,0 +1,10 @@
+--- a/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/bcmsdh_sdmmc_linux.c
++++ b/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/bcmsdh_sdmmc_linux.c
+@@ -366,6 +366,7 @@ module_exit(bcmsdh_module_cleanup);
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION(DESCRIPTION);
+ MODULE_AUTHOR(AUTHOR);
++MODULE_FIRMWARE("brcm/nvram_ap6275p.txt");
+ 
+ #endif /* BCMSDH_MODULE */
+ /*
