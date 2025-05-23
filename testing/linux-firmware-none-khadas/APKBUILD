@@ -15,7 +15,7 @@ license=HYPHOP
 depends="
 nano
 khadas-dev-boards
-linux-firmware-brcm-khadas-edge2
+linux-firmware-bcmdhd
 "
 
 package(){
